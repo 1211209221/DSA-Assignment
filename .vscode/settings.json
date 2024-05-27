@@ -4,6 +4,12 @@
     "ostream": "cpp",
     "iomanip": "cpp",
     "ios": "cpp",
-    "xiosbase": "cpp"
+    "xiosbase": "cpp",
+    "fstream": "cpp",
+    "xlocale": "cpp",
+    "xlocmon": "cpp",
+    "xlocnum": "cpp",
+    "xloctime": "cpp",
+    "system_error": "cpp"
   }
 }

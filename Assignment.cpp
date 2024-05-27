@@ -2,53 +2,88 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
-#include <vector> 
+#include <vector>
+#include <conio.h>
 #include <unistd.h>
 using namespace std;
+
+struct Book
+{
+	string id, name, author, genre;
+	double price;
+	int stock, numEntries = 0;
+};
+
 class Menus
 {
 	public:
+		// Insertion sort function to sort individual buckets 
+		void insertionSort(vector<Book>& bucket)
+		{ 
+			for (int i = 1; i < bucket.size(); ++i)
+			{ 
+				Book key = bucket[i]; 
+				int j = i - 1; 
+				while (j >= 0 && bucket[j].price > key.price)
+				{ 
+					bucket[j + 1] = bucket[j]; 
+					j--; 
+				} 
+				bucket[j + 1] = key; 
+			} 
+		} 
+
+		// Function to sort arr[] of size n using bucket sort 
+		void bucketSort(Book arr[], int n, double maxPrice)
+		{ 
+			// 1) Create n empty buckets 
+			vector<Book> b[n];
+			// 2) Put array elements in different buckets
+			for (int i = 0; i < n; i++)
+			{ 
+				// To make the price range from 0 to 1 (uniformly distributed)
+				int bi = (n-1) * (arr[i].price / maxPrice);  
+				b[bi].push_back(arr[i]);
+			} 
+			// 3) Sort individual buckets using insertion sort 
+			for (int i = 0; i < n; i++)
+			{ 
+				insertionSort(b[i]);
+			} 
+			// 4) Concatenate all buckets into arr[] 
+			int index = 0; 
+			for (int i = 0; i < n; i++) 
+			{ 
+				for (int j = 0; j < b[i].size(); j++)
+				{ 
+					arr[index++] = b[i][j]; 
+				}
+			}
+		} 
+		
 		void DisplayList()
 		{
-			int numEntries = 0;
-			string line, id, name, author, genre;
-			int stock;
-			double price;
-
-			//Get number of entries
-			ifstream countFile("books.txt");
-			if (countFile.is_open())
-			{
-			    while (getline(countFile, line))
-				{
-			        numEntries++;
-			    }
-			    countFile.close();
-			} else {
-			    cout << "Error: Unable to open the file 'books.txt'\n";
-			    exit(0);
-			}
-		    countFile.close();
-		    
+			Book b;
 			//Display List of Books
 			ifstream list ("books.txt");
 			cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre" << endl;
-			while(list >> id >> name >> price >> stock >> author >> genre)
+			while(list >> b.id >> b.name >> b.price >> b.stock >> b.author >> b.genre)
 			{
-				replace(name.begin(), name.end(), '%', ' ');
-				replace(author.begin(), author.end(), '%', ' ');
-				cout << left << setw(5) << id << left << setw(35) << name << left << "RM " << setw(10) << fixed << setprecision(2) << price << left << setw(7) << stock << left << setw(25) << author << left << setw(15) << genre << endl;
+				replace(b.name.begin(), b.name.end(), '%', ' ');
+				replace(b.author.begin(), b.author.end(), '%', ' ');
+				cout << left << setw(5) << b.id << left << setw(35) << b.name << left << "RM " << setw(10) << fixed << setprecision(2) << b.price << left << setw(7) << b.stock << left << setw(25) << b.author << left << setw(15) << b.genre << endl;
 			}
 			list.close();
 		}
 
 		void SortMenus()
 		{
-			string choice;
+			string choice, line;
+			Book b;
 
-			cout << "=================================================================================="<<endl;
+			cout << "==============================================================================================" << endl;
 			cout << "\t\t\t\tSORT MENU"<<endl;
-			cout << "=================================================================================="<<endl;
+			cout << "==============================================================================================" << endl;
 			DisplayList();
 			cout << endl << "How do you like to sort the list?" << endl;
 			cout << "1. Sort by Price" << endl;
@@ -59,45 +94,55 @@ class Menus
 			cin >> choice;
 			if (choice=="1")
 			{
-				//SORT BY PRICE USING BUCKET SORT
-				//Get number of entries
-				int i=0, numEntries, stock;
-				double price;
-				string line, id, name, author, genre;
+				//Calculate number of entries
 				ifstream countFile("books.txt");
 				if (countFile.is_open())
 				{
-				    while (getline(countFile, line))
+					while (getline(countFile, line))
 					{
-				        numEntries++;
-				    }
-				    countFile.close();
+						b.numEntries++;
+					}
+					countFile.close();
 				} else {
-				    cout << "Error: Unable to open the file 'books.txt'\n";
-				    exit(0);
+					cout << "Error: Unable to open the file 'books.txt'\n";
+					exit(0);
 				}
-			    countFile.close();
-			    double arr[numEntries];
-			    //Insert into array
-			    ifstream list ("books.txt");
-				while(list >> id >> name >> price >> stock >> author >> genre)
+				Book bs[b.numEntries];
+				//Insert into Array
+				ifstream list("books.txt");
+				for (int i = 0; i < b.numEntries; i++)
 				{
-					arr[i] = price;
-					i++;
+					list >> bs[i].id >> bs[i].name >> bs[i].price >> bs[i].stock >> bs[i].author >> bs[i].genre;
+					replace(bs[i].name.begin(), bs[i].name.end(), '%', ' ');
+					replace(bs[i].author.begin(), bs[i].author.end(), '%', ' ');
 				}
 				list.close();
-				int n = sizeof(arr) / sizeof(arr[0]);
-				bucketSort(arr,n);
-				cout << "Sorted array: \n"; 
-			    cout << "-------------" << endl; 
-			    for (int i = 0; i < n; i++)
-				{ 
-			        cout << arr[i] << " "; 
-			    } 
+				// To make the price range from 0 to 1 (uniformly distributed)
+				double maxPrice = 0.0;
+				for (int i = 0; i < b.numEntries; i++)
+				{
+					if (bs[i].price > maxPrice)
+					{
+						maxPrice = bs[i].price;
+					}
+				}
+				bucketSort(bs, b.numEntries, maxPrice);
+				// Display the sorted results
+				cout << endl << "This is the sorted list of books by price:" << endl;
+				cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre" << endl;
+				for (int i = 0; i < b.numEntries; i++)
+				{
+					cout << left << setw(5) << bs[i].id << left << setw(35) << bs[i].name << left << "RM " << setw(10) << fixed << setprecision(2) << bs[i].price << left << setw(7) << bs[i].stock << left << setw(25) << bs[i].author << left << setw(15) << bs[i].genre << endl;
+				}
+				cout << "Press any key to go back to sort menu...";
+				cin.ignore();
+				getch();  // waits for any key press
+				system("cls");
+				SortMenus();
 			}
 			else if (choice=="2")
 			{
-				//SORT BY AUTHOR
+				//SORT BY 
 			}
 			else if (choice=="3")
 			{
@@ -114,49 +159,6 @@ class Menus
 				SortMenus();
 			}
 		}
-		
-		// Insertion sort function to sort individual buckets 
-		void insertionSort(vector<float>& bucket)
-		{ 
-			for (int i = 1; i < bucket.size(); ++i)
-			{ 
-        		float key = bucket[i]; 
-        		int j = i - 1; 
-		        while (j >= 0 && bucket[j] > key)
-				{ 
-		            bucket[j + 1] = bucket[j]; 
-		            j--; 
-		        } 
-		        bucket[j + 1] = key; 
-		    } 
-		} 
-
-		// Function to sort arr[] of size n using bucket sort 
-		void bucketSort(float arr[], int n)
-		{ 
-		    // 1) Create n empty buckets 
-		    vector<float> b[n]; 
-		    // 2) Put array elements in different buckets 
-		    for (int i = 0; i < n; i++)
-			{ 
-		        int bi = n * arr[i]; 
-		        b[bi].push_back(arr[i]); 
-		    } 
-		    // 3) Sort individual buckets using insertion sort 
-		    for (int i = 0; i < n; i++)
-			{ 
-		        insertionSort(b[i]); 
-		    } 
-		    // 4) Concatenate all buckets into arr[] 
-		    int index = 0; 
-		    for (int i = 0; i < n; i++) 
-			{ 
-		        for (int j = 0; j < b[i].size(); j++)
-				{ 
-		            arr[index++] = b[i][j]; 
-		        }
-		    }
-		} 
 };
 
 int main(){
@@ -200,6 +202,6 @@ int main(){
 			system("cls");
         }
     }
-    
+
 	return 0;
 }
