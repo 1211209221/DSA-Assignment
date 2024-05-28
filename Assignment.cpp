@@ -43,6 +43,7 @@ class Menus
 			{ 
 				// To make the price range from 0 to 1 (uniformly distributed)
 				int bi = (n-1) * (arr[i].price / maxPrice);  
+				//push_back means add the current element arr[i] to the end of the bucket b[bi]
 				b[bi].push_back(arr[i]);
 			} 
 			// 3) Sort individual buckets using insertion sort 
@@ -117,7 +118,7 @@ class Menus
 					replace(bs[i].author.begin(), bs[i].author.end(), '%', ' ');
 				}
 				list.close();
-				// To make the price range from 0 to 1 (uniformly distributed)
+				// Will be used at bucketSort function
 				double maxPrice = 0.0;
 				for (int i = 0; i < b.numEntries; i++)
 				{
@@ -135,7 +136,7 @@ class Menus
 					cout << left << setw(5) << bs[i].id << left << setw(35) << bs[i].name << left << "RM " << setw(10) << fixed << setprecision(2) << bs[i].price << left << setw(7) << bs[i].stock << left << setw(25) << bs[i].author << left << setw(15) << bs[i].genre << endl;
 				}
 				cout << "Press any key to go back to sort menu...";
-				cin.ignore();
+				cin.ignore();  //clear buffer
 				getch();  // waits for any key press
 				system("cls");
 				SortMenus();
