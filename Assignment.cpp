@@ -60,7 +60,49 @@ class Menus
 					arr[index++] = b[i][j]; 
 				}
 			}
-		} 
+		}
+		
+		void countingSort(Book arr[], int n)
+	    {
+	        // Find the maximum stock to determine the range of counting array
+	        int maxStock = 0;
+	        for (int i = 0; i < n; ++i)
+	        {
+	            if (arr[i].stock > maxStock)
+	                maxStock = arr[i].stock;
+	        }
+	
+	        // Create a counting array to store the count of each stock value
+	        int count[maxStock + 1] = {0};
+	
+	        // Count the occurrences of each stock value
+	        for (int i = 0; i < n; ++i)
+	        {
+	            count[arr[i].stock]++;
+	        }
+	
+	        // Modify the count array to store the actual position of the elements
+	        for (int i = 1; i <= maxStock; ++i)
+	        {
+	            count[i] += count[i - 1];
+	        }
+	
+	        // Create a temporary array to store the sorted elements
+	        Book temp[n];
+	
+	        // Build the sorted array
+	        for (int i = n - 1; i >= 0; --i)
+	        {
+	            temp[count[arr[i].stock] - 1] = arr[i];
+	            count[arr[i].stock]--;
+	        }
+	
+	        // Copy the sorted elements back to the original array
+	        for (int i = 0; i < n; ++i)
+	        {
+	            arr[i] = temp[i];
+	        }
+	    } 
 		
 		void DisplayList()
 		{
@@ -89,7 +131,7 @@ class Menus
 			cout << endl << "How do you like to sort the list?" << endl;
 			cout << "1. Sort by Price" << endl;
 			//FOR MING DA
-			cout << "2. Sort by " << endl;
+			cout << "2. Sort by Stock" << endl;
 			cout << "3. Back to Main Menu\n";
 			cout << "Enter your choice: ";
 			cin >> choice;
@@ -143,7 +185,49 @@ class Menus
 			}
 			else if (choice=="2")
 			{
-				//SORT BY 
+				// Recalculate number of entries for sorting by stock
+		        ifstream countFile("books.txt");
+		        if (countFile.is_open())
+		        {
+		            while (getline(countFile, line))
+		            {
+		                b.numEntries++;
+		            }
+		            countFile.close();
+		        }
+		        else
+		        {
+		            cout << "Error: Unable to open the file 'books.txt'\n";
+		            exit(0);
+		        }
+		
+		        // Read books from file and create array
+		        Book bs[b.numEntries];
+		        // Insert books into array
+		        ifstream list("books.txt");
+		        for (int i = 0; i < b.numEntries; i++)
+		        {
+		            list >> bs[i].id >> bs[i].name >> bs[i].price >> bs[i].stock >> bs[i].author >> bs[i].genre;
+		            replace(bs[i].name.begin(), bs[i].name.end(), '%', ' ');
+		            replace(bs[i].author.begin(), bs[i].author.end(), '%', ' ');
+		        }
+		        list.close();
+		
+		        // Perform counting sort by stock
+		        countingSort(bs, b.numEntries);
+		
+		        // Display the sorted results
+			    cout << endl << "This is the sorted list of books by stock:" << endl;
+			    cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre" << endl;
+			    for (int i = 0; i < b.numEntries; i++)
+			    {
+			        cout << left << setw(5) << bs[i].id << left << setw(35) << bs[i].name << left << "RM " << setw(10) << fixed << setprecision(2) << bs[i].price << left << setw(7) << bs[i].stock << left << setw(25) << bs[i].author << left << setw(15) << bs[i].genre << endl;
+				}
+				cout << "Press any key to go back to sort menu...";
+				cin.ignore();
+				getch();  // waits for any key press
+				system("cls");
+				SortMenus();
 			}
 			else if (choice=="3")
 			{
