@@ -102,14 +102,94 @@ class Menus
 	        {
 	            arr[i] = temp[i];
 	        }
-	    } 
+	    }
+	    
+		// Function to sort the vector of books by genre first, then by price within each genre using insertion sort
+		void insertionSortGenre(vector<Book>& books) {
+		    for (int i = 1; i < books.size(); ++i) {
+		        Book key = books[i];
+		        int j = i - 1;
+		        
+		        // Sort by genre
+		        while (j >= 0 && (books[j].genre > key.genre)) {
+		            books[j + 1] = books[j];
+		            j--;
+		        }
+		        books[j + 1] = key;
+		    }
+		}
+		
+		vector<int> searchBooksByGenre(const vector<Book>& books, const string& keyword) {
+		    vector<int> indices;
+		    int left = 0;
+		    int right = books.size() - 1;
+		
+		    while (left <= right) {
+		        int mid = left + (right - left) / 2;
+		
+		        // Compare the keyword with the genre of the book at the middle index
+		        int compareResult = books[mid].genre.compare(0, keyword.length(), keyword);
+		
+		        if (compareResult == 0) {
+		            // If keyword matches at this position
+		            indices.push_back(mid);
+		
+		            // Check for matches to the left
+		            int i = mid - 1;
+		            while (i >= 0 && books[i].genre.compare(0, keyword.length(), keyword) == 0) {
+		                indices.push_back(i);
+		                i--;
+		            }
+		
+		            // Check for matches to the right
+		            i = mid + 1;
+		            while (i < books.size() && books[i].genre.compare(0, keyword.length(), keyword) == 0) {
+		                indices.push_back(i);
+		                i++;
+		            }
+		            break; // All occurrences found
+		        } else if (compareResult < 0) {
+		            left = mid + 1;
+		        } else {
+		            right = mid - 1;
+		        }
+		    }
+		    return indices;
+		}
+		
+		// Function to check if the keyword is contained in the title
+		bool containsKeyword(const string& str, const string& keyword) {
+		    int keywordLength = keyword.length();
+		    int strLength = str.length();
+		    for (int i = 0; i <= strLength - keywordLength; ++i) {
+		        int j;
+		        for (j = 0; j < keywordLength; ++j) {
+		            if (str[i + j] != keyword[j])
+		                break;
+		        }
+		        if (j == keywordLength)
+		            return true; // keyword found
+		    }
+		    return false; // keyword not found
+		}
+		
+		// Function to search for books containing the keyword in their title
+		vector<int> stringSearch(const vector<Book>& books, const string& keyword) {
+		    vector<int> indices;
+		    for (int i = 0; i < books.size(); ++i) {
+		        if (containsKeyword(books[i].name, keyword)) {
+		            indices.push_back(i);
+		        }
+		    }
+		    return indices;
+		}
 		
 		void DisplayList()
 		{
 			Book b;
 			//Display List of Books
 			ifstream list ("books.txt");
-			cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre" << endl;
+			cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre\n" << endl;
 			while(list >> b.id >> b.name >> b.price >> b.stock >> b.author >> b.genre)
 			{
 				replace(b.name.begin(), b.name.end(), '%', ' ');
@@ -125,14 +205,14 @@ class Menus
 			Book b;
 
 			cout << "==============================================================================================" << endl;
-			cout << "\t\t\t\tSORT MENU"<<endl;
+			cout << "\t\t\t\t\tSORT MENU"<<endl;
 			cout << "==============================================================================================" << endl;
 			DisplayList();
-			cout << endl << "How do you like to sort the list?" << endl;
-			cout << "1. Sort by Price" << endl;
-			//FOR MING DA
-			cout << "2. Sort by Stock" << endl;
-			cout << "3. Back to Main Menu\n";
+			cout << "----------------------------------------------------------------------------------------------"<<endl;
+			cout << "[1] Sort by Price" << endl;
+			cout << "[2] Sort by Stock" << endl;
+			cout << "[3] Back to Main Menu\n";
+			cout << "----------------------------------------------------------------------------------------------"<<endl;
 			cout << "Enter your choice: ";
 			cin >> choice;
 			if (choice=="1")
@@ -171,12 +251,18 @@ class Menus
 				}
 				bucketSort(bs, b.numEntries, maxPrice);
 				// Display the sorted results
-				cout << endl << "This is the sorted list of books by price:" << endl;
+				system("cls");
+				cout << "==============================================================================================" << endl;
+				cout << "\t\t\t\t\tSORT MENU"<<endl;
+				cout << "==============================================================================================" << endl;
+				cout << "Displaying list sorted by price:" << endl;
+				cout << "----------------------------------------------------------------------------------------------"<<endl;
 				cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre" << endl;
 				for (int i = 0; i < b.numEntries; i++)
 				{
 					cout << left << setw(5) << bs[i].id << left << setw(35) << bs[i].name << left << "RM " << setw(10) << fixed << setprecision(2) << bs[i].price << left << setw(7) << bs[i].stock << left << setw(25) << bs[i].author << left << setw(15) << bs[i].genre << endl;
 				}
+				cout << "----------------------------------------------------------------------------------------------"<<endl;
 				cout << "Press any key to go back to sort menu...";
 				cin.ignore();  //clear buffer
 				getch();  // waits for any key press
@@ -217,12 +303,18 @@ class Menus
 		        countingSort(bs, b.numEntries);
 		
 		        // Display the sorted results
-			    cout << endl << "This is the sorted list of books by stock:" << endl;
+		        system("cls");
+				cout << "==============================================================================================" << endl;
+				cout << "\t\t\t\t\tSORT MENU"<<endl;
+				cout << "==============================================================================================" << endl;
+			    cout << "This list sorted by stock:" << endl;
+			    cout << "----------------------------------------------------------------------------------------------"<<endl;
 			    cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre" << endl;
 			    for (int i = 0; i < b.numEntries; i++)
 			    {
 			        cout << left << setw(5) << bs[i].id << left << setw(35) << bs[i].name << left << "RM " << setw(10) << fixed << setprecision(2) << bs[i].price << left << setw(7) << bs[i].stock << left << setw(25) << bs[i].author << left << setw(15) << bs[i].genre << endl;
 				}
+				cout << "----------------------------------------------------------------------------------------------"<<endl;
 				cout << "Press any key to go back to sort menu...";
 				cin.ignore();
 				getch();  // waits for any key press
@@ -231,17 +323,168 @@ class Menus
 			}
 			else if (choice=="3")
 			{
-				cout << endl << "Going back to main menu..." << endl;
+				cout << endl << "Returning to main menu..." << endl;
 				sleep(1);
 				system("cls");
 				return;
 			}
 			else
 			{
-				cout << "Invalid choice! Please re-enter...\n";
+				cout << "\nInvalid choice! Please re-enter...\n";
 				sleep(1);
 				system("cls");
 				SortMenus();
+			}
+		}
+		
+		void SearchMenus()
+		{
+			string choice, line;
+			Book b;
+
+			cout << "==============================================================================================" << endl;
+			cout << "\t\t\t\t\tSEARCH MENU"<<endl;
+			cout << "==============================================================================================" << endl;
+			DisplayList();
+			
+			cout << "----------------------------------------------------------------------------------------------"<<endl;
+			cout << "[1] Search by Book Title" << endl;
+			cout << "[2] Search by Genre" << endl;
+			cout << "[3] Back to Main Menu\n";
+			cout << "----------------------------------------------------------------------------------------------"<<endl;
+			cout << "Enter your choice: ";
+			cin >> choice;
+			cin.ignore();
+			
+			if (choice=="1")
+			{
+				ifstream countFile("books.txt");
+			    if (!countFile.is_open()) {
+			        cout << "Error: Unable to open the file 'books.txt'\n";
+			    }
+			
+			    string line;
+			    int numEntries = 0;
+			    while (getline(countFile, line)) {
+			        numEntries++;
+			    }
+			    countFile.close();
+			
+			    vector<Book> bs(numEntries);
+			
+			    ifstream list("books.txt");
+			    for (int i = 0; i < numEntries; i++) {
+			        list >> bs[i].id >> bs[i].name >> bs[i].price >> bs[i].stock >> bs[i].author >> bs[i].genre;
+			        // Replace '%' with space in book name and author
+			        replace(bs[i].name.begin(), bs[i].name.end(), '%', ' ');
+			        replace(bs[i].author.begin(), bs[i].author.end(), '%', ' ');
+			    }
+			    list.close();
+				
+			    // Ask the user for the target string
+			    string target;
+			    system("cls");
+			    cout << "==============================================================================================" << endl;
+				cout << "\t\t\t\t\tSEARCH MENU"<<endl;
+				cout << "==============================================================================================" << endl;
+			    cout << "Search titles: ";
+			    getline(cin, target);
+				system("cls");
+		    	cout << "==============================================================================================" << endl;
+				cout << "\t\t\t\t\tSEARCH MENU"<<endl;
+				cout << "==============================================================================================" << endl;
+			    vector<int> indices = stringSearch(bs, target);
+			    cout << "Showing " << indices.size() << " result(s) for '" << target << "':" << endl;
+			    cout << "----------------------------------------------------------------------------------------------"<<endl;
+			    cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre" << endl;
+			    if (!indices.empty()) {
+					cout << "" << endl;
+				    for (size_t i = 0; i < indices.size(); ++i) {
+				        cout << left << setw(5) << bs[indices[i]].id << left << setw(35) << bs[indices[i]].name << left << "RM " << setw(10) << fixed << setprecision(2) << bs[indices[i]].price << left << setw(7) << bs[indices[i]].stock << left << setw(25) << bs[indices[i]].author << left << setw(15) << bs[indices[i]].genre << endl;
+				    }
+				    
+				} else {
+				    cout << "\n\n\n\t\t\t\t\tNo results...\n\n\n"<< endl;
+				}
+
+			    cout << "----------------------------------------------------------------------------------------------"<<endl;
+			    cout << "Press any key to go back to the search menu...";
+				getch();  // waits for any key press
+				system("cls");
+				SearchMenus();
+			}
+			else if (choice=="2")
+			{
+				ifstream countFile("books.txt");
+			    if (!countFile.is_open()) {
+			        cout << "Error: Unable to open the file 'books.txt'\n";
+			    }
+			
+			    string line;
+			    int numEntries = 0;
+			    while (getline(countFile, line)) {
+			        numEntries++;
+			    }
+			    countFile.close();
+			
+			    vector<Book> bs(numEntries);
+			
+			    ifstream list("books.txt");
+			    for (int i = 0; i < numEntries; i++) {
+			        list >> bs[i].id >> bs[i].name >> bs[i].price >> bs[i].stock >> bs[i].author >> bs[i].genre;
+			        // Replace '%' with space in book name and author
+			        replace(bs[i].name.begin(), bs[i].name.end(), '%', ' ');
+			        replace(bs[i].author.begin(), bs[i].author.end(), '%', ' ');
+			    }
+			    list.close();
+				
+				insertionSortGenre(bs);
+				
+			    // Ask the user for the target string
+			    string target;
+			    system("cls");
+			    cout << "==============================================================================================" << endl;
+				cout << "\t\t\t\t\tSEARCH MENU"<<endl;
+				cout << "==============================================================================================" << endl;
+			    cout << "Search genres: ";
+			    getline(cin, target);
+				system("cls");
+		    	cout << "==============================================================================================" << endl;
+				cout << "\t\t\t\t\tSEARCH MENU"<<endl;
+				cout << "==============================================================================================" << endl;
+			    vector<int> indices = searchBooksByGenre(bs, target);
+			    cout << "Showing " << indices.size() << " result(s) for the genre '" << target << "':" << endl;
+			    cout << "----------------------------------------------------------------------------------------------"<<endl;
+			    cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre" << endl;
+			    if (!indices.empty()) {
+					cout << "" << endl;
+				    for (size_t i = 0; i < indices.size(); ++i) {
+				        cout << left << setw(5) << bs[indices[i]].id << left << setw(35) << bs[indices[i]].name << left << "RM " << setw(10) << fixed << setprecision(2) << bs[indices[i]].price << left << setw(7) << bs[indices[i]].stock << left << setw(25) << bs[indices[i]].author << left << setw(15) << bs[indices[i]].genre << endl;
+				    }
+				    
+				} else {
+				    cout << "\n\n\n\t\t\t\t\tNo results...\n\n\n"<< endl;
+				}
+
+			    cout << "----------------------------------------------------------------------------------------------"<<endl;
+			    cout << "Press any key to go back to the search menu...";
+				getch();  // waits for any key press
+				system("cls");
+				SearchMenus();
+			}
+			else if (choice=="3")
+			{
+				cout << endl << "Returning to main menu..." << endl;
+				sleep(1);
+				system("cls");
+				return;
+			}
+			else
+			{
+				cout << "\nInvalid choice! Please re-enter...\n";
+				sleep(1);
+				system("cls");
+				SearchMenus();
 			}
 		}
 };
@@ -258,8 +501,8 @@ int main(){
 		cout << "\t\t\t\tMAIN MENU"<<endl;
         cout << "----------------------------------------------------------------------------------"<<endl;
         cout << "1. BOOKS\n";
-        cout << "2. SEARCH\n";
-        cout << "3. SORT\n";
+        cout << "2. SEARCH (String search + Ubiquitous binary search)\n";
+        cout << "3. SORT (Bucket sort + counting sort)\n";
         cout << "4. EXIT\n";
         cout << "----------------------------------------------------------------------------------"<<endl;
         cout << "Enter your choice: ";
@@ -269,20 +512,20 @@ int main(){
             cout << "D";
             system("cls");
         } else if (choice == "2") {
-            cout << "Directing to search page...\n";
+            cout << "\nDirecting to search page...\n";
             sleep(1);
 			system("cls");
-			//client.SearchMenus();
+			client.SearchMenus();
         } else if (choice == "3") {
-            cout << "Directing to sort page...\n";
+            cout << "\nDirecting to sort page...\n";
             sleep(1);
 			system("cls");
 			client.SortMenus();
         } else if (choice == "4") {
-            cout << "Thank you for using our system! Goodbye!\n";
+            cout << "\nThank you for using our system! Goodbye!\n";
 		    exit(0);
         } else {
-            cout << "Invalid choice! Please re-enter...\n";
+            cout << "\nInvalid choice! Please re-enter...\n";
 			sleep(1);
 			system("cls");
         }

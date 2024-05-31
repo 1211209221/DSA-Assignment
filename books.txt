@@ -7,7 +7,7 @@ R001 The%Cat%in%the%Hat 1.99 38 Dr.%Seuss Children
 C002 The%Picture%of%Dorian%Gray 3.60 39 Oscar%Wilde Classics
 C003 The%Old%Man%and%the%Sea 2.99 31 Ernest%Hemingway Classics
 F001 The%Hobbit 5.50 44 J.R.R.%Tolkien Fantasy
-C004 The%Great%Gatsby 6.99 38 F.%Scott%Fitzgerald Classic
+C004 The%Great%Gatsby 6.99 38 F.%Scott%Fitzgerald Classics
 F002 The%Lord%of%the%Rings 7.00 24 J.R.R.%Tolkien Fantasy
 M002 The%Da%Vinci%Code 3.80 35 Dan%Brown Mystery
 H001 The%Shining 3.10 23 Stephen%King Horror
