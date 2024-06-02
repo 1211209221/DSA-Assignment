@@ -131,32 +131,31 @@ class Menus
 		        int mid = left + (right - left) / 2;
 		
 		        // Compare the keyword with the genre of the book at the middle index
-		        int compareResult = books[mid].genre.compare(0, keyword.length(), keyword);
-		
-		        if (compareResult == 0) {
-		            // If keyword matches at this position
-		            indices.push_back(mid);
-		
-		            // Check for matches to the left
-		            int i = mid - 1;
-		            while (i >= 0 && books[i].genre.compare(0, keyword.length(), keyword) == 0) {
-		                indices.push_back(i);
-		                i--;
-		            }
-		
-		            // Check for matches to the right
-		            i = mid + 1;
-		            while (i < books.size() && books[i].genre.compare(0, keyword.length(), keyword) == 0) {
-		                indices.push_back(i);
-		                i++;
-		            }
-		            break; // All occurrences found
-		        } else if (compareResult < 0) {
+		        if (books[mid].genre < keyword) {
 		            left = mid + 1;
 		        } else {
 		            right = mid - 1;
 		        }
 		    }
+		
+		    // Now left points to the first occurrence of the keyword or its immediate greater
+		    // element if not found
+		    int firstOccurrence = left;
+		
+		    // Check if the first occurrence matches the keyword
+		    if (firstOccurrence < books.size() && books[firstOccurrence].genre == keyword) {
+		
+		        // Add the index of the first occurrence
+		        indices.push_back(firstOccurrence);
+		
+		        // Search for all occurrences to the right
+		        int i = firstOccurrence + 1;
+		        while (i < books.size() && books[i].genre == keyword) {
+		            indices.push_back(i);
+		            i++;
+		        }
+		    }
+		
 		    return indices;
 		}
 		
