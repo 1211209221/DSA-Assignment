@@ -196,10 +196,12 @@ class Menus
 			cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre\n" << endl;
 			while(list >> b.id >> b.name >> b.price >> b.stock >> b.author >> b.genre)
 			{
+				b.numEntries++;
 				replace(b.name.begin(), b.name.end(), '%', ' ');
 				replace(b.author.begin(), b.author.end(), '%', ' ');
 				cout << left << setw(5) << b.id << left << setw(35) << b.name << left << "RM " << setw(10) << fixed << setprecision(2) << b.price << left << setw(7) << b.stock << left << setw(25) << b.author << left << setw(15) << b.genre << endl;
 			}
+			cout<<endl<<"Total Number of Book: "<<b.numEntries<<endl<<endl;
 			list.close();
 		}
 
@@ -561,11 +563,39 @@ class Menus
 		    putinfile.close();	
 		}
 		
+		//to know whether the first letter of id is alphabet 
 		bool isValidID(const string& id) {
 		    if (id.empty()) {
 		        return false; // An empty ID is not valid
 		    }
 		    return isalpha(id[0]);
+		}
+		
+		//to know genre from id
+		string getGenre(const string& id) {
+		    if (id.empty()) {
+		        return "Invalid ID";
+		    }
+		
+		    char firstChar = toupper(id[0]); // Convert to uppercase to handle both cases
+		
+		    switch (firstChar) {
+		        case 'M': return "Mystery";break;
+		        case 'N': return "Fiction";break;
+		        case 'X': return "Non-fiction";break;
+		        case 'P': return "Philosophy";break;
+		        case 'C': return "Classics";break;
+		        case 'A': return "Action";break;
+		        case 'T': return "Thriller";break;
+		        case 'R': return "Children";break;
+		        case 'H': return "Horror";break;
+		        case 'D': return "Dystopian";break;
+		        case 'E': return "Detective";break;
+		        case 'I': return "Historical";break;
+		        case 'F': return "Fantasy";break;
+		        case 'L': return "Romance";break;
+		        default: return "Unknown"; 
+		    }
 		}
 		
 		void addnewbook(){
@@ -585,9 +615,9 @@ class Menus
 			cout << "BOOK MENU > ADD NEW BOOK"<<endl;
 			cout << "----------------------------------------------------------------------------------------------"<<endl;
 			cout << "The first letter of ID that corresponds to the genre:"<<endl;
-			cout << left << setw(15) <<"M-Mystery" << setw(15) <<"N-Fiction"<< setw(15) <<"P-Philosophy"<<setw(15) <<"C-Classics"<< setw(15) <<"A-Action"<<endl;
-			cout << left << setw(15) <<"T-Thriller"<< setw(15) <<"R-Children"<< setw(15) <<"H-Horror"<< setw(15) <<"D-Dystopian"<< setw(15) <<"I-Historical"<<endl;
-			cout << left << setw(15) <<"F-Fantasy" << setw(15) <<"L-Romance"<<endl;
+			cout << left << setw(15) <<"\tM-Mystery" << setw(15) <<"N-Fiction"<< setw(15) <<"X-Non-fiction"<<setw(15) <<"C-Classics"<< setw(15) <<"A-Action"<<endl;
+			cout << left << setw(15) <<"\tT-Thriller"<< setw(15) <<"R-Children"<< setw(15) <<"H-Horror"<< setw(15) <<"D-Dystopian"<< setw(15) <<"I-Historical"<<endl;
+			cout << left << setw(15) <<"\tF-Fantasy" << setw(15) <<"L-Romance"<< setw(15) <<"P-Philosophy"<< setw(15) <<"E-Detective"<<endl;
 			cout << "----------------------------------------------------------------------------------------------"<<endl;
 			cout << "Please fill the information of new book."<<endl<<endl;
 			//open file
@@ -708,19 +738,13 @@ class Menus
 			}
 			fflush(stdin);
 			
-			cout << "Genre   : ";
-			getline(cin,genre);
-			if(genre == "0"){
-				cout<<"~ Incorrect format!"<<endl;
-				cout << "\nInvalid data! Please re-enter...\n";
-				sleep(2);
-				addnewbook();
-			}
+			genre = getGenre(id);
+			
 			
 			cout << "----------------------------------------------------------------------------------------------"<<endl;
 			//confirm
 				fflush(stdin);
-				cout<<"Enter 'C' to confirm saving, other key to cancel... ";
+				cout<<"Enter 'C' to confirm saving, other key to cancel: ";
 				cin>>confirm;
 				
 				//save
@@ -764,7 +788,6 @@ class Menus
 		}
 		
 		void viewbook(){
-			string choice;
 			
 			system("cls");
 			cout << "=============================================================================================="<<endl;
@@ -774,37 +797,11 @@ class Menus
 			cout << "----------------------------------------------------------------------------------------------"<<endl;
 			DisplayList();
 			cout << "----------------------------------------------------------------------------------------------"<<endl;
-			cout << "[1] SEARCH (String search + Ubiquitous binary search)"<<endl;
-			cout << "[2] SORT (Bucket sort + counting sort)"<<endl;
-        	cout << "[3] Back to Book Menu"<<endl;
-			cout << "----------------------------------------------------------------------------------------------"<<endl;
-        	cout << "Enter your choice: ";
-        	cin >> choice;
+			cout << "Press any key to go back to the book menu...";
+			getch();  // waits for any key press
+			system("cls");
+			BookMenu();    	
         	
-        	if(choice=="1"){
-        		cout << "\nDirecting to search page...\n";
-	            sleep(1);
-				system("cls");
-				SearchMenus();
-			}
-			else if(choice=="2"){
-				cout << "\nDirecting to sort page...\n";
-	            sleep(1);
-				system("cls");
-				SortMenus();
-			}
-			else if(choice == "3"){
-				cout <<"\nReturning to book menu..." << endl;
-				sleep(1);
-				system("cls");
-				BookMenu();
-			}
-			else{
-				cout << "\nInvalid choice! Please re-enter...\n";
-				sleep(1);
-				system("cls");
-				viewbook();
-			}
 		}
 		
 };
