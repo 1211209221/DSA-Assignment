@@ -160,32 +160,90 @@ class Menus
 		    return indices;
 		}
 		
-		// Function to check if the keyword is contained in the title
-		bool containsKeyword(const string& str, const string& keyword) {
-		    int keywordLength = keyword.length();
-		    int strLength = str.length();
-		    for (int i = 0; i <= strLength - keywordLength; ++i) {
-		        int j;
-		        for (j = 0; j < keywordLength; ++j) {
-		            if (str[i + j] != keyword[j])
-		                break;
-		        }
-		        if (j == keywordLength)
-		            return true; // keyword found
+		
+		vector<int> preprocessBadCharacter(const string& pattern) {
+		    const int CHARSET_SIZE = 256; // Size of the character set (e.g., ASCII)
+		    vector<int> badCharTable(CHARSET_SIZE, -1);
+		
+		    for (int i = 0; i < pattern.size(); ++i) {
+		        badCharTable[pattern[i]] = i;
 		    }
-		    return false; // keyword not found
+		
+		    return badCharTable;
+		}
+
+		// Function to preprocess the good suffix heuristic
+		vector<int> preprocessGoodSuffix(const string& pattern) {
+		    int m = pattern.size();
+		    vector<int> goodSuffixTable(m + 1, m);
+		    vector<int> borderPos(m + 1, 0);
+		    int i = m;
+		    int j = m + 1;
+		
+		    borderPos[i] = j;
+		    while (i > 0) {
+		        while (j <= m && pattern[i - 1] != pattern[j - 1]) {
+		            if (goodSuffixTable[j] == m) {
+		                goodSuffixTable[j] = j - i;
+		            }
+		            j = borderPos[j];
+		        }
+		        i--;
+		        j--;
+		        borderPos[i] = j;
+		    }
+		
+		    j = borderPos[0];
+		    for (i = 0; i <= m; ++i) {
+		        if (goodSuffixTable[i] == m) {
+		            goodSuffixTable[i] = j;
+		        }
+		        if (i == j) {
+		            j = borderPos[j];
+		        }
+		    }
+		
+		    return goodSuffixTable;
+		}
+		
+		// Function to check pattern of the keyword match or not
+		bool BoyerMooreSearch(const string& text, const string& pattern) {
+		    int n = text.size();
+		    int m = pattern.size();
+		
+		    vector<int> badCharTable = preprocessBadCharacter(pattern);
+		    vector<int> goodSuffixTable = preprocessGoodSuffix(pattern);
+		
+		    int s = 0; // s is the shift of the pattern with respect to the text
+		    while (s <= (n - m)) {
+		        int j = m - 1;
+		
+		        while (j >= 0 && pattern[j] == text[s + j]) {
+		            j--;
+		        }
+		
+		        if (j < 0) {
+		            return true; // pattern found
+		            s += goodSuffixTable[0];
+		        } else {
+		            s += max(goodSuffixTable[j + 1], j - badCharTable[text[s + j]]);
+		        }
+		    }
+		
+		    return false; // pattern not found
 		}
 		
 		// Function to search for books containing the keyword in their title
 		vector<int> stringSearch(const vector<Book>& books, const string& keyword) {
 		    vector<int> indices;
 		    for (int i = 0; i < books.size(); ++i) {
-		        if (containsKeyword(books[i].name, keyword)) {
+		        if (BoyerMooreSearch(books[i].name, keyword)) {
 		            indices.push_back(i);
 		        }
 		    }
 		    return indices;
 		}
+		
 		
 		void DisplayList()
 		{
