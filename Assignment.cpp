@@ -19,35 +19,43 @@ struct Book
 class Menus
 {
 	public:
-		// Counting sort function to sort individual buckets 
-		void countingSort(vector<Book>& bucket, double maxPrice)
-		{ 
-			vector<Book> output(bucket.size());
-			vector<double> count(maxPrice + 1, 0);
+		// Heapify function to find the max heap
+		void heapify(vector<Book>& arr, int n, int i)
+		{
+			int largest = i; 
+			int left = 2 * i + 1; 
+			int right = 2 * i + 2; 
 
-			// Store count of each price
-			for (int i = 0; i < bucket.size(); i++)
-				count[bucket[i].price]++;
+			if (left < n && arr[left].price > arr[largest].price)
+				largest = left;
 
-			// Change count[i] so that count[i] now contains actual
-			// position of this price in output array
-			for (int i = 1; i <= maxPrice; i++)
-				count[i] += count[i - 1];
+			if (right < n && arr[right].price > arr[largest].price)
+				largest = right;
 
-			// Build the output array
-			for (int i = bucket.size() - 1; i >= 0; i--)
+			if (largest != i)
 			{
-				output[count[bucket[i].price] - 1] = bucket[i];
-				count[bucket[i].price]--;
+				swap(arr[i], arr[largest]);
+				heapify(arr, n, largest);
 			}
+		}
 
-			// Copy the output array to bucket, so that bucket now
-			// contains sorted prices
-			for (int i = 0; i < bucket.size(); i++)
-				bucket[i] = output[i];
+		// Heaping sort function to sort individual buckets
+		void heapSort(vector<Book>& b, int n)
+		{
+			for(int i = n/2-1; i>=0; i--)
+			{
+				//create max heap
+				heapify(b, n, i);
+			}
+			for(int i = n-1; i>=0; i--)
+			{
+				//swap 1st node with last node
+				swap(b[0],b[i]);
+				heapify(b, i, 0);
+			}
 		} 
 
-		// Function to sort arr[] of size n using bucket sort 
+		// Bucket Sort to distribute elements into corresponding buckets
 		void bucketSort(Book arr[], int n, double maxPrice)
 		{ 
 			// 1) Create n empty buckets 
@@ -60,10 +68,11 @@ class Menus
 				//push_back means add the current element arr[i] to the end of the bucket b[bi]
 				b[bi].push_back(arr[i]);
 			} 
-			// 3) Sort individual buckets using counting sort 
+			// 3) Sort individual buckets using heap sort 
 			for (int i = 0; i < n; i++)
 			{ 
-				countingSort(b[i], maxPrice);
+				//countingSort(b[i], maxPrice);
+				heapSort(b[i], b[i].size());
 			} 
 			// 4) Concatenate all buckets into arr[] 
 			int index = 0; 
