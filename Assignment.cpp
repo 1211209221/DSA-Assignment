@@ -9,7 +9,6 @@
 
 using namespace std;
 
-
 struct Book
 {
 	string id, name, author, genre;
@@ -20,20 +19,32 @@ struct Book
 class Menus
 {
 	public:
-		// Insertion sort function to sort individual buckets 
-		void insertionSort(vector<Book>& bucket)
+		// Counting sort function to sort individual buckets 
+		void countingSort(vector<Book>& bucket, double maxPrice)
 		{ 
-			for (int i = 1; i < bucket.size(); ++i)
-			{ 
-				Book key = bucket[i]; 
-				int j = i - 1; 
-				while (j >= 0 && bucket[j].price > key.price)
-				{ 
-					bucket[j + 1] = bucket[j]; 
-					j--; 
-				} 
-				bucket[j + 1] = key; 
-			} 
+			vector<Book> output(bucket.size());
+			vector<double> count(maxPrice + 1, 0);
+
+			// Store count of each price
+			for (int i = 0; i < bucket.size(); i++)
+				count[bucket[i].price]++;
+
+			// Change count[i] so that count[i] now contains actual
+			// position of this price in output array
+			for (int i = 1; i <= maxPrice; i++)
+				count[i] += count[i - 1];
+
+			// Build the output array
+			for (int i = bucket.size() - 1; i >= 0; i--)
+			{
+				output[count[bucket[i].price] - 1] = bucket[i];
+				count[bucket[i].price]--;
+			}
+
+			// Copy the output array to bucket, so that bucket now
+			// contains sorted prices
+			for (int i = 0; i < bucket.size(); i++)
+				bucket[i] = output[i];
 		} 
 
 		// Function to sort arr[] of size n using bucket sort 
@@ -49,10 +60,10 @@ class Menus
 				//push_back means add the current element arr[i] to the end of the bucket b[bi]
 				b[bi].push_back(arr[i]);
 			} 
-			// 3) Sort individual buckets using insertion sort 
+			// 3) Sort individual buckets using counting sort 
 			for (int i = 0; i < n; i++)
 			{ 
-				insertionSort(b[i]);
+				countingSort(b[i], maxPrice);
 			} 
 			// 4) Concatenate all buckets into arr[] 
 			int index = 0; 
