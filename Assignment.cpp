@@ -126,60 +126,111 @@ class Menus
 	            arr[i] = temp[i];
 	        }
 	    }
-	    
-		// Function to sort the vector of books by genre first, then by price within each genre using insertion sort
-		void insertionSortGenre(vector<Book>& books) {
-		    for (int i = 1; i < books.size(); ++i) {
-		        Book key = books[i];
-		        int j = i - 1;
-		        
-		        // Sort by genre
-		        while (j >= 0 && (books[j].genre > key.genre)) {
-		            books[j + 1] = books[j];
-		            j--;
+		
+		// Helper function to check if a genre exists in the uniqueGenres array
+		int findGenreIndex(const vector<string>& uniqueGenres, const string& genre) {
+		    for (int i = 0; i < uniqueGenres.size(); ++i) {
+		        if (uniqueGenres[i] == genre) {
+		            return i;
 		        }
-		        books[j + 1] = key;
+		    }
+		    return -1;
+		}
+		
+		// Function to sort genres manually
+		void manualSortGenres(vector<string>& genres) {
+		    for (int i = 0; i < genres.size(); ++i) {
+		        for (int j = i + 1; j < genres.size(); ++j) {
+		            if (genres[i] > genres[j]) {
+		                swap(genres[i], genres[j]);
+		            }
+		        }
+		    }
+		}
+		
+		void countingSortGenre(vector<Book>& books) {
+		    // Determine the range of genres
+		    vector<string> uniqueGenres;
+		    for (int i = 0; i < books.size(); ++i) {
+		        if (findGenreIndex(uniqueGenres, books[i].genre) == -1) {
+		            uniqueGenres.push_back(books[i].genre);
+		        }
+		    }
+		    manualSortGenres(uniqueGenres);
+		
+		    int maxGenreIndex = uniqueGenres.size() - 1;
+		
+		    // Create a counting array to store the count of each genre
+		    vector<int> count(maxGenreIndex + 1, 0);
+		
+		    // Count the occurrences of each genre
+		    for (int i = 0; i < books.size(); ++i) {
+		        int genreIndex = findGenreIndex(uniqueGenres, books[i].genre);
+		        count[genreIndex]++;
+		    }
+		
+		    // Modify the count array to store the actual position of the elements
+		    for (int i = 1; i <= maxGenreIndex; ++i) {
+		        count[i] += count[i - 1];
+		    }
+		
+		    // Create a temporary array to store the sorted elements
+		    vector<Book> temp(books.size());
+		
+		    // Build the sorted array
+		    for (int i = books.size() - 1; i >= 0; --i) {
+		        int genreIndex = findGenreIndex(uniqueGenres, books[i].genre);
+		        temp[count[genreIndex] - 1] = books[i];
+		        count[genreIndex]--;
+		    }
+		
+		    // Copy the sorted elements back to the original array
+		    for (int i = 0; i < books.size(); ++i) {
+		        books[i] = temp[i];
 		    }
 		}
 		
 		vector<int> searchBooksByGenre(const vector<Book>& books, const string& keyword) {
 		    vector<int> indices;
+		
 		    int left = 0;
-		    int right = books.size() - 1;
+		    int right = books.size();
 		
-		    while (left <= right) {
+		    // Find the lower bound
+		    while (left < right) {
 		        int mid = left + (right - left) / 2;
-		
-		        // Compare the keyword with the genre of the book at the middle index
-		        int compareResult = books[mid].genre.compare(0, keyword.length(), keyword);
-		
-		        if (compareResult == 0) {
-		            // If keyword matches at this position
-		            indices.push_back(mid);
-		
-		            // Check for matches to the left
-		            int i = mid - 1;
-		            while (i >= 0 && books[i].genre.compare(0, keyword.length(), keyword) == 0) {
-		                indices.push_back(i);
-		                i--;
-		            }
-		
-		            // Check for matches to the right
-		            i = mid + 1;
-		            while (i < books.size() && books[i].genre.compare(0, keyword.length(), keyword) == 0) {
-		                indices.push_back(i);
-		                i++;
-		            }
-		            break; // All occurrences found
-		        } else if (compareResult < 0) {
+		        if (books[mid].genre.compare(0, keyword.length(), keyword) < 0) {
 		            left = mid + 1;
 		        } else {
-		            right = mid - 1;
+		            right = mid;
 		        }
 		    }
+		    int lower_bound = left;
+		
+		    // Reset left and right for the upper bound search
+		    left = 0;
+		    right = books.size();
+		
+		    // Find the upper bound
+		    while (left < right) {
+		        int mid = left + (right - left) / 2;
+		        if (books[mid].genre.compare(0, keyword.length(), keyword) <= 0) {
+		            left = mid + 1;
+		        } else {
+		            right = mid;
+		        }
+		    }
+		    int upper_bound = left;
+		
+		    // Collect all matching indices
+		    for (int i = lower_bound; i < upper_bound; ++i) {
+		        if (books[i].genre.compare(0, keyword.length(), keyword) == 0) {
+		            indices.push_back(i);
+		        }
+		    }
+		
 		    return indices;
 		}
-		
 		
 		vector<int> preprocessBadCharacter(const string& pattern) {
 		    const int CHARSET_SIZE = 256; // Size of the character set (e.g., ASCII)
@@ -270,7 +321,6 @@ class Menus
 			Book b;
 			//Display List of Books
 			ifstream list ("books.txt");
-			cout << "The current unsorted list of book:"<<endl<<endl;
 			cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre\n" << endl;
 			while(list >> b.id >> b.name >> b.price >> b.stock >> b.author >> b.genre)
 			{
@@ -293,6 +343,7 @@ class Menus
 			cout << "==============================================================================================" << endl;			
 			cout << "\t\t\t\t\tSORT MENU"<<endl;
 			cout << "----------------------------------------------------------------------------------------------"<<endl;
+			cout << "The current unsorted list of books:"<<endl<<endl;
 			DisplayList();
 			cout << "----------------------------------------------------------------------------------------------"<<endl;
 			cout << "[1] Sort by Price" << endl;
@@ -532,7 +583,7 @@ class Menus
 			    }
 			    list.close();
 				
-				insertionSortGenre(bs);
+				countingSortGenre(bs);
 				
 			    // Ask the user for the target string
 			    string target;
@@ -551,7 +602,7 @@ class Menus
 				cout << "\t\t\t\t\tSEARCH MENU"<<endl;
 			    cout << "----------------------------------------------------------------------------------------------"<<endl;
 			    vector<int> indices = searchBooksByGenre(bs, target);
-			    cout << "Showing " << indices.size() << " result(s) for the genre '" << target << "':" << endl;
+			    cout << "Showing " << indices.size() << " result(s) for '" << target << "':" << endl;
 			    cout << "----------------------------------------------------------------------------------------------"<<endl;
 			    cout << left << setw(5) << "No." << left << setw(35) << "Book Name" << left << setw(13) << "Price" << left << setw(7) << "Stock" << left << setw(25) << "Author" << left << setw(15) << "Genre" << endl;
 			    if (!indices.empty()) {
